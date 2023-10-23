@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express()
 const port = process.env.PORT || 5000
 // middle ware
@@ -21,28 +21,62 @@ const client = new MongoClient(uri, {
         deprecationErrors: true,
     }
 });
-
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
-        const newProductCollection = client.db('productDB').collection('product')
-        app.get('/shop', async (req, res) => {
-            const cursor = newProductCollection.find()
-            const result = await cursor.toArray()
-            res.send(result)
-        })
-        app.post('/shop', async (req, res) => {
-            const newProduct = req.body
-            // console.log(newProduct);
-            const result = await newProductCollection.insertOne(newProduct)
+        const newCarCollection = client.db('carDb').collection('Car')
+        app.get('/car', async (req, res) => {
+            const cursor = newCarCollection.find();
+            const result = await cursor.toArray();
+            res.send(result);
+        });
+
+        app.get('/cardetails/:name', async (req, res) => {
+            const brandName = req.params.name;
+            const filter = { brand: brandName };
+            const result = await newCarCollection.find(filter).toArray();
+            res.send(result);
+        });
+
+        app.get('/car/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const result = await newCarCollection.findOne(filter);
+            res.send(result);
+        });
+
+        app.get('/brandcar/:brand', async (req, res) => {
+            const brand = req.params.brand;
+            const filter = { brand: brand };
+            const result = await newCarCollection.find(filter).toArray();
+            res.send(result);
+        });
+
+        app.put('/car/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updatedCar = req.body;
+            const car = {
+                $set: {
+                    name: updatedCar.name,
+                    price: updatedCar.price,
+                    brand: updatedCar.brand,
+                    description: updatedCar.description,
+                    image: updatedCar.image,
+                }
+            };
+            const result = await newCarCollection.updateOne(filter, car, options);
+            res.send(result);
+        });
+        app.delete('/car/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const result = await newCarCollection.deleteOne(filter)
             res.send(result)
         })
 
-
-        // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+        // Rest of your code remains the same
     } finally {
         // Ensures that the client will close when you finish/error
         // await client.close();
