@@ -26,6 +26,7 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
         const newCarCollection = client.db('carDb').collection('Car')
+        const addInCart = client.db('carDb').collection('product')
         app.get('/car', async (req, res) => {
             const cursor = newCarCollection.find();
             const result = await cursor.toArray();
@@ -52,6 +53,19 @@ async function run() {
             const result = await newCarCollection.find(filter).toArray();
             res.send(result);
         });
+        app.post('/addProducts', async (req, res) => {
+            const addProduct = req.body;
+            const result = await addInCart.insertOne(addProduct)
+            res.send(result);
+        });
+
+
+        app.get('/getAddProducts', async (req, res) => {
+            const query = {};
+            const result = await addInCart.find(query).toArray();
+            res.send(result);
+        })
+
 
         app.put('/car/:id', async (req, res) => {
             const id = req.params.id;
@@ -66,7 +80,7 @@ async function run() {
                     image: updatedCar.image,
                 }
             };
-            const result = await newCarCollection.updateOne(filter, car, options);
+            const result = await newCarCollection.updateOne(filter, car);
             res.send(result);
         });
         app.delete('/car/:id', async (req, res) => {
@@ -93,3 +107,5 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
     console.log(`server is runninggg: ${port}`);
 })
+
+module.exports = app;
