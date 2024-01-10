@@ -55,10 +55,15 @@ async function run() {
         });
         app.post('/addProducts', async (req, res) => {
             const addProduct = req.body;
+            // console.log(addProduct);
             const result = await addInCart.insertOne(addProduct)
             res.send(result);
         });
-
+        app.get('/addProducts', async (req, res) => {
+            const cursor = addInCart.find();
+            const result = await cursor.toArray();
+            res.send(result);
+        });
 
         app.get('/getAddProducts', async (req, res) => {
             const query = {};
@@ -74,10 +79,10 @@ async function run() {
             const car = {
                 $set: {
                     name: updatedCar.name,
-                    price: updatedCar.price,
-                    brand: updatedCar.brand,
+                    difficulty: updatedCar.difficulty,
+                    marks: updatedCar.marks,
                     description: updatedCar.description,
-                    image: updatedCar.image,
+                    url: updatedCar.url,
                 }
             };
             const result = await newCarCollection.updateOne(filter, car);
@@ -109,3 +114,4 @@ app.listen(port, () => {
 })
 
 module.exports = app;
+
